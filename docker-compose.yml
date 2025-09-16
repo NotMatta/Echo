@@ -1,0 +1,18 @@
+services:
+  # Your PostgreSQL Database (I'm too lazy to set up a separate DB server)
+  postgres:
+    image: postgres:16-alpine # Uses a smaller, more efficient Alpine Linux image
+    container_name: my-project-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: myuser       # The default username you want
+      POSTGRES_PASSWORD: password # The password for the user
+      POSTGRES_DB: mydatabase     # The default database to create
+    ports:
+      - "5432:5432" # Maps localhost:5432 to the container's port 5432
+    volumes:
+      - postgres_data:/var/lib/postgresql/data # Persists data between container restarts
+
+# A named volume to ensure your database data persists even if the container is removed.
+volumes:
+  postgres_data:

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import SessionGuard from "@/components/guards/session-guard";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
