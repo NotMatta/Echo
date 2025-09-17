@@ -18,8 +18,8 @@ export const signUp = async (name: string, email: string, password: string) : Pr
   const cookieStore = await cookies();
   try {
     const hashedPassword = await hash(password, 10);
-    const existingUser = await prisma.user.findUnique({
-      where: { email },
+    const existingUser = await prisma.user.findFirst({
+      where: {OR : [{ email }, { name }]},
     });
     if (existingUser) {
       return { ok: false, message: "User already exists" };
