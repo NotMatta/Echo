@@ -9,7 +9,7 @@ import { isRedirectError } from "next/dist/client/components/redirect-error";
 
 interface SignInResult {
   ok: boolean;
-  user?: { id: number; name: string; email: string };
+  user?: { id: string; name: string; email: string };
   message: string;
   error?: any;
 }
@@ -66,14 +66,14 @@ export const signIn = async (name: string, password: string) : Promise<SignInRes
   }
 };
 
-export const validateToken = async () : Promise<{ ok: boolean; userId?: number; message: string }> => {
+export const validateToken = async () : Promise<{ ok: boolean; userId?: string; message: string }> => {
   const cookieStore = await cookies();
   try {
     const token = cookieStore.get("token")?.value;
     if (!token) {
       return { ok: false, message: "No token found" };
     }
-    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as { userId: number };
+    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as { userId: string };
     return { ok: true, userId: decoded.userId, message: "Token is valid" };
   } catch (error) {
     console.error("Invalid token:", error);
@@ -82,6 +82,30 @@ export const validateToken = async () : Promise<{ ok: boolean; userId?: number; 
     return { ok: false, message: "Invalid token" };
   }
 };
+
+export const getCurrentUser = async () : Promise<{ ok: boolean; user?: { id: string; name: string; email: string, pfp: string | null }; message: string }> => {
+  const cookieStore = await cookies();
+  try {
+    const token = cookieStore.get("token")?.value;
+    if (!token) {
+      return { ok: false, message: "No token found" };
+    }
+    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as { userId: string };
+    const user = await prisma.user.findUnique({
+      where: { id: decoded.userId },
+      select: { id: true, name: true, email: true, pfp: true },
+    });
+    if (!user) {
+      return { ok: false, message: "User not found" };
+    }
+    return { ok: true, user, message: "User fetched successfully" };
+  } catch (error) {
+    console.error("Error fetching current user:", error);
+    cookieStore.delete("token");
+    cookieStore.delete("user");
+    return { ok: false, message: "Error fetching user" };
+  }
+}
 
 export const signOut = async () : Promise<{ ok: boolean; message: string | void }> => {
   const cookieStore = await cookies();

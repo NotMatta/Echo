@@ -3,17 +3,45 @@ generator client {
   output   = "../generated/prisma"
 }
 
+enum Status {
+  PENDING
+  FRIENDS
+  BLOCKED
+  REJECTED
+}
+
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
+  id        String   @id @default(uuid())
   email     String   @unique
   name      String   @unique
   password  String
   pfp       String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  sentFriendships     Friendship[] @relation("FriendshipInitiator")
+  receivedFriendships Friendship[] @relation("FriendshipReceiver")
+
+  friends  User[] @relation("UserFriends")
+  friendOf User[] @relation("UserFriends")
+}
+
+model Friendship {
+  id        Int      @id @default(autoincrement())
+  status    Status   @default(PENDING)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  initiatorId String
+  initiator   User @relation("FriendshipInitiator", fields: [initiatorId], references: [id], onDelete: Cascade)
+
+  receiverId String
+  receiver   User @relation("FriendshipReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
+
+  @@unique([initiatorId, receiverId])
 }
