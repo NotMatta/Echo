@@ -30,7 +30,7 @@ const AddFriendButton = () => {
   return(
     <div>
       <button className="bg-primary px-6 py-1 rounded-full font-bold hover:bg-primary/80"
-      onClick={() => setTooggle(true)}
+      onClick={() => { setResponse(null); setName(""); setTooggle(true)}}
       >Add Friend</button>
       {toggle && <div className="absolute w-screen h-screen top-0 left-0 flex justify-center items-center">
         <div className="w-full h-full bg-black/50 absolute top-0 left-0" onClick={() => setTooggle(false)}/>
