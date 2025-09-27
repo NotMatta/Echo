@@ -1,6 +1,8 @@
+"use client"
 import { Friendship } from "@/generated/prisma";
 import { fetchFriendRequests } from "../friends";
 import { RequestComponent } from "@/components/request-component";
+import { useFetch } from "@/components/hooks/useFetch";
 
 interface FriendshipProps extends Friendship {
   initiator: {
@@ -10,16 +12,18 @@ interface FriendshipProps extends Friendship {
   }
 }
 
-const RequestsPage = async () => {
+const RequestsPage = () => {
 
-  const requestsData = await fetchFriendRequests("RECEIVED");
+  const {data: requests, loading, error} = useFetch("requests",async () => await fetchFriendRequests("RECEIVED"));
 
-  if(!requestsData) return <div className="p-4">Loading...</div>
+  if(loading) return <div className="p-4">Loading...</div>
+
+  if(error) return <div className="p-4 text-center text-red-500">Error: {error.toString()}</div>
+
+  if(!requests || requests.length === 0) return <div className="p-4 text-center text-white/50">No Friend Requests Recieved</div>
 
   return <div className="p-4">
-    {requestsData.ok && requestsData.data.length > 0 ? requestsData.data.map((friendRequest: FriendshipProps) => (
-      <RequestComponent key={friendRequest.id} friendRequest={friendRequest} />
-    )) : <p className="text-center text-white/50">No Friend Requests Recieved</p>}
+    {requests.map((friendRequest: FriendshipProps) => <RequestComponent key={friendRequest.id} friendRequest={friendRequest} />)}
   </div>;
 }
 

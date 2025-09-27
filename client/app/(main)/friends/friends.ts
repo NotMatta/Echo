@@ -9,7 +9,7 @@ interface SendRequestResult {
   error?: any;
 }
 
-interface fetchOptions extends SendRequestResult {
+export interface fetchOptions extends SendRequestResult {
   data?: any;
 }
 

@@ -3,7 +3,7 @@
 import { createContext, useContext, useState, useEffect } from "react"
 
 interface CacheContextType {
-  get: (key: string) => any;
+  get: (key: string) => {data: any, date: Date};
   set: (key: string, value: any) => void;
   remove: (key: string) => void;
 }
@@ -12,7 +12,7 @@ const CacheContext = createContext<CacheContextType | undefined>(undefined);
 
 export const CacheProvider = ({ children }: { children: React.ReactNode }) => {
 
-  const [cache, setCache] = useState<{ [key: string]: any }>({});
+  const [cache, setCache] = useState<{ [key: string]: {data: any, date: Date} }>({});
   const [loading,setLoading] = useState(true);
 
   useEffect(() => {
@@ -37,12 +37,15 @@ export const CacheProvider = ({ children }: { children: React.ReactNode }) => {
   },[cache])
 
   const get = (key: string) => {
+    if(!cache[key] || (new Date().getTime() - (new Date(cache[key].date)).getTime()) > 1 * 60 * 1000){
+      return {data: null, date: new Date(0)};
+    }
     return cache[key];
   }
 
   const set = (key: string, value: any) => {
     const newCache = {...cache};
-    newCache[key] = value
+    newCache[key] = { data: value, date: new Date()}
     setCache(newCache);
   }
 
