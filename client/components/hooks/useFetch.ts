@@ -1,10 +1,10 @@
 "use client"
-import { fetchOptions } from "@/app/(main)/friends/friends";
 import { useCache } from "../providers/cache-provider";
 import { useEffect, useState } from "react";
+import { ActionResponse } from "@/types/action-response";
 
-export const useFetch = (key: string, action: () => Promise<fetchOptions>) => {
-  const [data, setData] = useState<any>(null);
+export const useFetch = <T>(key: string, action: () => Promise<ActionResponse>) => {
+  const [data, setData] = useState<T | any>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<any>(null);
   const { get, set, remove } = useCache()!;
@@ -12,6 +12,11 @@ export const useFetch = (key: string, action: () => Promise<fetchOptions>) => {
   const refresh = () => {
     remove(key);
     setLoading(true);
+  }
+
+  const mutate = (newData: T) => {
+    setData(newData);
+    set(key,newData);
   }
 
   useEffect(() => {
@@ -43,5 +48,5 @@ export const useFetch = (key: string, action: () => Promise<fetchOptions>) => {
     loading && fetchData();
   },[loading]);
 
-  return { data, loading, error, refresh };
+  return { data, loading, error, refresh, mutate };
 }

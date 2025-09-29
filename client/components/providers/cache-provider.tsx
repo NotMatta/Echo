@@ -1,5 +1,6 @@
 "use client"
 
+import { FileClock } from "lucide-react";
 import { createContext, useContext, useState, useEffect } from "react"
 
 interface CacheContextType {
@@ -61,6 +62,7 @@ export const CacheProvider = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <CacheContext.Provider value={{get,set,remove}}>
+      <button onClick={() => console.log(cache)} className="absolute bottom-2 right-2 p-2 bg-primary rounded-lg"><FileClock /></button>
       {children}
     </CacheContext.Provider>
   );

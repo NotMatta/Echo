@@ -1,6 +1,6 @@
 "use client";
 import { Friendship } from "@/generated/prisma";
-import { cancelRequest } from "@/app/(main)/friends/friends";
+import { LoaderCircle } from "lucide-react";
 
 interface FriendshipProps extends Friendship {
   receiver: {
@@ -10,7 +10,8 @@ interface FriendshipProps extends Friendship {
   }
 }
 
-export const PendingComponent = (props: {friendRequest: FriendshipProps}) => {
+export const PendingComponent = (props: {friendRequest: FriendshipProps, isCanceling: boolean, cancelAction: (id: string) => void}) => {
+
   return <div className="p-4 border-b border-background flex justify-between items-center">
     <div className="flex items-center gap-4">
       {props.friendRequest.receiver.pfp ? <img src={props.friendRequest.receiver.pfp} alt={props.friendRequest.receiver.name} className="w-10 h-10 rounded-full object-cover"/> :
@@ -21,7 +22,9 @@ export const PendingComponent = (props: {friendRequest: FriendshipProps}) => {
       </div>
     </div>
     <div className="flex gap-2">
-      <button className="bg-red-600 px-4 py-2 rounded-lg font-bold hover:bg-red-700" onClick={() => cancelRequest(props.friendRequest.id)}>Cancel</button>
+      <button className="bg-red-600 px-4 py-2 rounded-lg font-bold hover:bg-red-700" disabled={props.isCanceling} onClick={() => props.cancelAction(props.friendRequest.id)}>
+        {props.isCanceling ? <LoaderCircle className="animate-spin"/> : "Cancel"}
+      </button>
     </div>
   </div>;
 }

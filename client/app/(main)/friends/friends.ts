@@ -1,19 +1,10 @@
 "use server"
 import { validateToken } from "@/app/actions/auth.actions";
+import { ActionResponse } from "@/types/action-response";
 import { Status } from "@/generated/prisma";
 import prisma from "@/utils/prisma-client";
 
-interface SendRequestResult {
-  ok: boolean;
-  message: string;
-  error?: any;
-}
-
-export interface fetchOptions extends SendRequestResult {
-  data?: any;
-}
-
-export const SendRequest = async (username: string) : Promise<SendRequestResult> => {
+export const SendRequest = async (username: string) : Promise<ActionResponse> => {
   try {
     return await prisma.$transaction(async (prisma) => {
       const res = await validateToken();
@@ -68,7 +59,7 @@ export const SendRequest = async (username: string) : Promise<SendRequestResult>
   }
 }
 
-export const fetchFriendRequests = async (type: "SENT" | "RECEIVED" ) : Promise<fetchOptions> => {
+export const fetchFriendRequests = async (type: "SENT" | "RECEIVED" ) : Promise<ActionResponse> => {
   try {
     const res = await validateToken();
     if (!res || !res.ok) {
@@ -115,7 +106,7 @@ export const fetchFriendRequests = async (type: "SENT" | "RECEIVED" ) : Promise<
   }
 }
 
-export const cancelRequest = async (requestId: number) : Promise<SendRequestResult> => {
+export const cancelRequest = async (requestId: string) : Promise<ActionResponse> => {
   try {
     return await prisma.$transaction(async (prisma) => {
       const res = await validateToken();
@@ -145,7 +136,7 @@ export const cancelRequest = async (requestId: number) : Promise<SendRequestResu
   }
 }
 
-export const acceptRequest = async (requestId: number) : Promise<SendRequestResult> => {
+export const acceptRequest = async (requestId: string) : Promise<ActionResponse> => {
   try {
     return await prisma.$transaction(async (prisma) => {
       const res = await validateToken();
@@ -188,7 +179,7 @@ export const acceptRequest = async (requestId: number) : Promise<SendRequestResu
   }
 }
 
-export const declineRequest = async (requestId: number) : Promise<SendRequestResult> => {
+export const declineRequest = async (requestId: string) : Promise<ActionResponse> => {
   try {
     return await prisma.$transaction(async (prisma) => {
       const res = await validateToken();
@@ -247,7 +238,7 @@ export const getFriends = async () => {
   }
 }
 
-export const removeFriend = async (friendId: string) : Promise<SendRequestResult> => {
+export const removeFriend = async (friendId: string) : Promise<ActionResponse> => {
   try{
     return await prisma.$transaction(async (prisma) => {
       const res = await validateToken();

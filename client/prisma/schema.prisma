@@ -32,7 +32,7 @@ model User {
 }
 
 model Friendship {
-  id        Int      @id @default(autoincrement())
+  id        String      @id @default(uuid())
   status    Status   @default(PENDING)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
