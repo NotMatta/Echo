@@ -1,7 +1,7 @@
 "use client"
 
 import { FileClock } from "lucide-react";
-import { createContext, useContext, useState, useEffect, useRef, useReducer } from "react"
+import { createContext, useContext, useRef, useReducer } from "react"
 
 interface CacheContextType {
   get: (key: string) => {data: any, date: Date};

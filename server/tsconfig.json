@@ -44,6 +44,7 @@
     "allowImportingTsExtensions": true
   },
   "include": [
+    "**/*.ts",
     "src/**/*.ts",
     "src/**/*.d.ts"
   ]

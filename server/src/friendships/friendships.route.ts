@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { middleware } from "../auth/auth.middleware.ts";
 import prisma from "../utils/prisma-client.ts";
+import { Status } from "@prisma/client";
 
 const router: Router = Router();
 router.use(middleware);
@@ -26,9 +27,9 @@ router.get("/", async (req, res) => {
   }
 });
 
-router.post("/:friendName", async (req, res) => {
+router.post("/", async (req, res) => {
   try {
-    const { friendName } = req.params;
+    const { friendName } = req.body;
     const foundUser = await prisma.user.findUnique({
       where: { name: friendName },
     });
@@ -76,11 +77,72 @@ router.post("/:friendName", async (req, res) => {
         receiverId: foundUser.id,
         status: "PENDING",
       },
+      include: { receiver: { select: { id: true, name: true, email: true, pfp: true } } },
     });
     return res.status(201).json({ message: "Friend request sent", friendship: newFriendship });
   }
   catch (error) {
     return res.status(500).json({ message: "Error sending friend request", error });
+  }
+});
+
+router.put("/:friendshipId", async (req, res) => {
+  try {
+    const { friendshipId } = req.params;
+    const { action }: { action: "ACCEPT" | "REJECT" | "BLOCK" | "UNBLOCK" | "CANCEL" } = req.body;
+    if(!["ACCEPT", "REJECT", "BLOCK", "UNBLOCK", "CANCEL"].includes(action)) {
+      return res.status(400).json({ message: "Invalid action" });
+    }
+    const friendship = await prisma.friendship.findUnique({
+      where: { id: friendshipId },
+    });
+    if (!friendship) {
+      return res.status(404).json({ message: "Friend request not found" });
+    }
+
+    let updatedStatus: Status;
+
+    switch (action) {
+      case "ACCEPT": case "REJECT":
+        if (friendship.receiverId !== req.user!.id) {
+          return res.status(403).json({ message: "You are not authorized to accept or reject this friend request" });
+        }
+        if (friendship.status !== "PENDING") {
+          return res.status(400).json({ message: "Friend request is not pending" });
+        }
+        updatedStatus = action === "ACCEPT" ? "FRIENDS" : "REJECTED";
+        break;
+      case "CANCEL":
+        if(friendship.status !== "PENDING" || friendship.initiatorId !== req.user!.id) {
+          return res.status(403).json({ message: "You are not authorized to cancel this friend request" });
+        }
+        await prisma.friendship.delete({ where: { id: friendshipId } });
+        return res.status(200).json({ message: `Friend request Canceled` });
+      case "BLOCK":
+        if ((friendship.initiatorId !== req.user!.id && friendship.receiverId !== req.user!.id) || friendship.status !== "FRIENDS") {
+          return res.status(403).json({ message: "You are not authorized to block this user" });
+        }
+        updatedStatus = friendship.initiatorId === req.user!.id ? "RE_BLOCKED" : "IN_BLOCKED";
+        break;
+      case "UNBLOCK":
+        if (friendship.initiatorId !== req.user!.id && friendship.receiverId !== req.user!.id && (friendship.status !== "IN_BLOCKED" && friendship.status !== "RE_BLOCKED")) {
+          return res.status(403).json({ message: "You are not authorized to unblock this user" });
+        }
+        updatedStatus = "REJECTED";
+        break;
+      default:
+        return res.status(400).json({ message: "Invalid action" });
+    }
+
+    const updatedFriendship = await prisma.friendship.update({
+      where: { id: friendshipId },
+      data: { status: updatedStatus },
+    });
+
+    return res.status(200).json({ message: `Friend request ${action.toLowerCase()}ed`, friendship: updatedFriendship });
+  }
+  catch (error) {
+    return res.status(500).json({ message: "Error updating friend request", error });
   }
 });
 

@@ -6,7 +6,7 @@ import { FriendshipReceiver } from "@/types/friendship";
 
 const PendingPage = () => {
 
-  const [isCancelling, setIsCancelling] = useState(false);
+  const [isCancelling, ] = useState(false);
 
   const { relations: pending } = useFriendships("PENDING", "SENT") as { relations: FriendshipReceiver[] };
 

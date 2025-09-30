@@ -14,7 +14,8 @@ export const useFetch = <T>(key: string, action: () => Promise<ActionResponse>) 
     setLoading(true);
   }
 
-  const mutate = (newData: T) => {
+  const mutate = (next : (old: T) => T) => {
+    const newData = next(data);
     setData(newData);
     set(key,newData);
   }
@@ -25,13 +26,11 @@ export const useFetch = <T>(key: string, action: () => Promise<ActionResponse>) 
       setError(null);
       const cached = get(key);
       if (cached.data) {
-        alert("using cache for "+key)
         setData(cached.data);
         setLoading(false);
         return;
       }
       try {
-        alert("fetching new data for "+key)
         const result = await action();
         if (result.ok) {
           setData(result.data);
