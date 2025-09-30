@@ -6,7 +6,8 @@ generator client {
 enum Status {
   PENDING
   FRIENDS
-  BLOCKED
+  IN_BLOCKED //blocked by initiator
+  RE_BLOCKED //blocked by receiver
   REJECTED
 }
 

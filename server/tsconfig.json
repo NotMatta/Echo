@@ -41,6 +41,10 @@
     "moduleDetection": "force",
     "skipLibCheck": true,
 
-    "allowImportingTsExtensions": true,
-  }
+    "allowImportingTsExtensions": true
+  },
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.d.ts"
+  ]
 }
