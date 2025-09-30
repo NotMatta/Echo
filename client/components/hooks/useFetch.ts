@@ -25,13 +25,13 @@ export const useFetch = <T>(key: string, action: () => Promise<ActionResponse>) 
       setError(null);
       const cached = get(key);
       if (cached.data) {
-        alert("using cache")
+        alert("using cache for "+key)
         setData(cached.data);
         setLoading(false);
         return;
       }
       try {
-        alert("fetching new data")
+        alert("fetching new data for "+key)
         const result = await action();
         if (result.ok) {
           setData(result.data);

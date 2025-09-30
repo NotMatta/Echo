@@ -1,16 +1,8 @@
 "use client";
-import { Friendship } from "@/generated/prisma";
 import { LoaderCircle } from "lucide-react";
+import { FriendshipReceiver } from "@/types/friendship";
 
-interface FriendshipProps extends Friendship {
-  receiver: {
-    id: string;
-    name: string;
-    pfp: string | null;
-  }
-}
-
-export const PendingComponent = (props: {friendRequest: FriendshipProps, isCanceling: boolean, cancelAction: (id: string) => void}) => {
+export const PendingComponent = (props: {friendRequest: FriendshipReceiver, isCanceling: boolean, cancelAction: (id: string) => void}) => {
 
   return <div className="p-4 border-b border-background flex justify-between items-center">
     <div className="flex items-center gap-4">

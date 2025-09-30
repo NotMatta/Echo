@@ -14,11 +14,11 @@ router.get("/", async (req, res) => {
   try{
     const sent = await prisma.friendship.findMany({
       where: { initiatorId: req.user!.id },
-      include: { receiver: { select: { id: true, name: true } } },
+      include: { receiver: { select: { id: true, name: true, email: true, pfp: true } } },
     });
     const received = await prisma.friendship.findMany({
       where: { receiverId: req.user!.id },
-      include: { initiator: { select: { id: true, name: true } } },
+      include: { initiator: { select: { id: true, name: true, email: true, pfp: true } } },
     });
     return res.status(200).json({friendships: {sent,received}});
   } catch (error) {

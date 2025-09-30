@@ -1,16 +1,8 @@
 "use client";
-import { Friendship } from "@/generated/prisma";
 import { acceptRequest, declineRequest } from "@/app/(main)/friends/friends";
+import { FriendshipInitiator } from "@/types/friendship";
 
-interface FriendshipProps extends Friendship {
-  initiator: {
-    id: string;
-    name: string;
-    pfp: string | null;
-  }
-}
-
-export const RequestComponent = (props: {friendRequest: FriendshipProps}) => {
+export const RequestComponent = (props: {friendRequest: FriendshipInitiator}) => {
   return <div className="p-4 border-b border-background flex justify-between items-center">
     <div className="flex items-center gap-4">
       {props.friendRequest.initiator.pfp ? <img src={props.friendRequest.initiator.pfp} alt={props.friendRequest.initiator.name} className="w-10 h-10 rounded-full object-cover"/> :

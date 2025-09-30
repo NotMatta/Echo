@@ -90,9 +90,9 @@ export const getCurrentUser = async () : Promise<ActionResponse> => {
       const errorData = await res.json();
       return { ok: false, message: errorData.message || "Error fetching user" };
     }
-    const data = await res.json();
+    const data = await res.json() as { ok: boolean; message: string; user: { id: string; name: string; email: string; pfp: string | null } };
     console.log("Fetched current user:", data);
-    return { ok: true, message: "User fetched successfully", data };
+    return { ok: true, message: "User fetched successfully", data: data.user };
   } catch (error) {
     console.error("Error fetching current user:", error);
     cookieStore.delete("token");
