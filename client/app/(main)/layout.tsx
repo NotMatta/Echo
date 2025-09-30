@@ -4,10 +4,11 @@ import { getCurrentUser } from "../actions/auth.actions";
 
 const MainLayout = async ({ children }: { children: React.ReactNode }) => {
   
-  const {user : currentUser} = await getCurrentUser();
+  const { data, message } = await getCurrentUser();
+  const currentUser = data?.user || null;
 
   if (!currentUser) {
-    return <div>Please log in to access this page.</div>;
+    return <div>Please log in to access this page. {message}</div>;
   }
 
 

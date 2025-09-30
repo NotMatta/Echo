@@ -2,7 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
-import authRoute from './routes/authRoute.ts';
+import apiRouter from './routes/index.ts';
 
 dotenv.config();
 const app = express();
@@ -19,7 +19,7 @@ app.get('/', (_req, res) => {
   res.send('Hello, World!');
 });
 
-app.use('/auth', authRoute);
+app.use('/api', apiRouter);
 
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
