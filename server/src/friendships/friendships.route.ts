@@ -54,7 +54,13 @@ router.post("/", async (req, res) => {
         case "FRIENDS":
           return res.status(400).json({ message: "You are already friends" });
         case "REJECTED":
-          return res.status(400).json({ message: "Friend request was rejected" });
+          if(existingFriendship.updatedAt.getTime() + 24*60*60*1000 > new Date().getTime()) {
+            if(existingFriendship.initiatorId === req.user!.id) {
+              return res.status(400).json({ message: "You have been rejected, you need to wait 24 hours before sending another friend request" });
+            } 
+          }
+          await prisma.friendship.delete({ where: { id: existingFriendship.id } });
+          break;
         case "IN_BLOCKED":
           if (existingFriendship.initiatorId === req.user!.id) {
             return res.status(400).json({ message: "You have blocked this user" });

@@ -54,3 +54,81 @@ export const addFriend = async (username: string) : Promise<ActionResponse> => {
     return { ok: false, message: "Error adding friend", error };
   }
 }
+
+export const cancelRequest = async (friendshipId: string) : Promise<ActionResponse> => {
+  const cookieStore = await cookies();
+  try{
+    const token = cookieStore.get('token')?.value;
+    if (!token) {
+      return { ok: false, message: "No token found" };
+    }
+    const res = await fetch(`${process.env.SERVER_URL}/api/friendships/${friendshipId}`, {
+      method: 'PUT',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+        'Cookie': `token=${token}`
+      },
+      body: JSON.stringify({ action: "CANCEL" })
+    });
+    if (!res.ok) {
+      const errorData = await res.json();
+      return { ok: false, message: errorData.message || "Error cancelling friend request" };
+    }
+    return { ok: true, message: "Friend request cancelled successfully" };
+  } catch (error) {
+    return { ok: false, message: "Error cancelling friend request", error };
+  }
+}
+
+export const acceptRequest = async (friendshipId: string) : Promise<ActionResponse> => {
+  const cookieStore = await cookies();
+  try{
+    const token = cookieStore.get('token')?.value;
+    if (!token) {
+      return { ok: false, message: "No token found" };
+    }
+    const res = await fetch(`${process.env.SERVER_URL}/api/friendships/${friendshipId}`, {
+      method: 'PUT',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+        'Cookie': `token=${token}`
+      },
+      body: JSON.stringify({ action: "ACCEPT" })
+    });
+    if (!res.ok) {
+      const errorData = await res.json();
+      return { ok: false, message: errorData.message || "Error accepting friend request" };
+    }
+    return { ok: true, message: "Friend request accepted successfully" };
+  } catch (error) {
+    return { ok: false, message: "Error accepting friend request", error };
+  }
+}
+
+export const declineRequest = async (friendshipId: string) : Promise<ActionResponse> => {
+  const cookieStore = await cookies();
+  try{
+    const token = cookieStore.get('token')?.value;
+    if (!token) {
+      return { ok: false, message: "No token found" };
+    }
+    const res = await fetch(`${process.env.SERVER_URL}/api/friendships/${friendshipId}`, {
+      method: 'PUT',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+        'Cookie': `token=${token}`
+      },
+      body: JSON.stringify({ action: "REJECT" })
+    });
+    if (!res.ok) {
+      const errorData = await res.json();
+      return { ok: false, message: errorData.message || "Error declining friend request" };
+    }
+    return { ok: true, message: "Friend request declined successfully" };
+  } catch (error) {
+    return { ok: false, message: "Error declining friend request", error };
+  }
+}

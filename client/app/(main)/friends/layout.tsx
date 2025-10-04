@@ -39,6 +39,8 @@ const AddFriendButton = () => {
           ]
         };
       });
+      setName("");
+      setTooggle(false);
     }
     setResponse(res);
     setLoading(false);
@@ -49,7 +51,7 @@ const AddFriendButton = () => {
       <button className="bg-primary px-6 py-1 rounded-full font-bold hover:bg-primary/80"
       onClick={() => { setResponse(null); setName(""); setTooggle(true)}}
       >Add Friend</button>
-      {toggle && <div className="absolute w-screen h-screen top-0 left-0 flex justify-center items-center">
+      {toggle && <div className="absolute w-screen h-screen top-0 left-0 flex justify-center items-center" >
         <div className="w-full h-full bg-black/50 absolute top-0 left-0" onClick={() => setTooggle(false)}/>
         <div className="bg-foreground z-30 rounded-lg w-[600px] shadow flex p-4">
           <div className="flex flex-col grow mr-4 relative py-1">
