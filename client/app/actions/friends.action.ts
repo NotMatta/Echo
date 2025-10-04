@@ -132,3 +132,28 @@ export const declineRequest = async (friendshipId: string) : Promise<ActionRespo
     return { ok: false, message: "Error declining friend request", error };
   }
 }
+
+export const unfriend = async (friendshipId: string) : Promise<ActionResponse> => {
+  const cookieStore = await cookies();
+  try{
+    const token = cookieStore.get('token')?.value;
+    if (!token) {
+      return { ok: false, message: "No token found" };
+    }
+    const res = await fetch(`${process.env.SERVER_URL}/api/friendships/${friendshipId}`, {
+      method: 'DELETE',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+        'Cookie': `token=${token}`
+      },
+    });
+    if (!res.ok) {
+      const errorData = await res.json();
+      return { ok: false, message: errorData.message || "Error unfriending user" };
+    }
+    return { ok: true, message: "User unfriended successfully" };
+  } catch (error) {
+    return { ok: false, message: "Error unfriending user", error };
+  }
+}

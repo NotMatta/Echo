@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { middleware } from "./auth/auth.middleware.ts";
 import jwt from "jsonwebtoken";
+import type { Socket } from "socket.io";
 
 // Store to manage active socket connections linked to user IDs
 
@@ -32,6 +33,18 @@ export const getCountActiveSockets = (): number => {
     count += sockets.size;
   });
   return count;
+}
+
+// Handle functions
+
+export const handleConnection = (socket: Socket) => {
+  addSocket(socket.data.userId, socket.id);
+  console.log('A user connected:', socket.id, 'User ID:', socket.data.userId, 'Total active sockets:', getCountActiveSockets());
+
+  socket.on('disconnect', () => {
+    removeSocket(socket.data.userId, socket.id);
+    console.log('User disconnected:', socket.id, "Total active sockets:", getCountActiveSockets());
+  });
 }
 
 // Route to generate a JWT token for socket authentication

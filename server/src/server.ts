@@ -6,7 +6,7 @@ import apiRouter from './routes/index.ts';
 import { createServer } from "http";
 import { Server } from "socket.io";
 import { socketMiddleware } from './utils/socket-middleware.ts';
-import { addSocket, removeSocket, getCountActiveSockets } from './socket.ts';
+import { handleConnection } from './socket.ts';
 
 dotenv.config();
 const app = express();
@@ -29,23 +29,13 @@ app.use('/api', apiRouter);
 const server = createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:3000", // your Next.js app
+    origin: "http://localhost:3000",
     methods: ["GET", "POST"],
   },
 });
 
 io.use(socketMiddleware);
-
-io.on('connection', (socket) => {
-  addSocket(socket.data.userId, socket.id);
-  console.log('A user connected:', socket.id, 'User ID:', socket.data.userId, 'Total active sockets:', getCountActiveSockets());
-
-  socket.on('disconnect', () => {
-    removeSocket(socket.data.userId, socket.id);
-    console.log('User disconnected:', socket.id, "Total active sockets:", getCountActiveSockets());
-  });
-});
-
+io.on('connection', handleConnection);
 app.set('io', io);
 
 server.listen(PORT, () => {

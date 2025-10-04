@@ -152,4 +152,29 @@ router.put("/:friendshipId", async (req, res) => {
   }
 });
 
+router.delete("/:friendshipId", async (req, res) => {
+  try {
+    const { friendshipId } = req.params;
+    if (!friendshipId) {
+      return res.status(400).json({ message: "Friendship ID is required" });
+    }
+    const friendship = await prisma.friendship.findUnique({
+      where: { id: friendshipId },
+    });
+    if (!friendship) {
+      return res.status(404).json({ message: "Friend request not found" });
+    }
+    if (friendship.initiatorId !== req.user!.id && friendship.receiverId !== req.user!.id) {
+      return res.status(403).json({ message: "You are not authorized to delete this friend request" });
+    }
+    if(friendship.status !== "FRIENDS") {
+      return res.status(400).json({ message: "Only friends can be deleted" });
+    }
+    await prisma.friendship.delete({ where: { id: friendshipId } });
+    return res.status(200).json({ message: "Friend request deleted" });
+  } catch (error) {
+    return res.status(500).json({ message: "Error deleting friend request", error });
+  }
+});
+
 export default router;

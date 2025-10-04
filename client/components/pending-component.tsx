@@ -2,7 +2,7 @@
 import { LoaderCircle } from "lucide-react";
 import { FriendshipReceiver } from "@/types/friendship";
 
-export const PendingComponent = (props: {friendRequest: FriendshipReceiver, isCanceling: boolean, cancelAction: (id: string) => void}) => {
+export const PendingComponent = (props: {friendRequest: FriendshipReceiver, isCanceling: string, cancelAction: (id: string) => void}) => {
 
   return <div className="p-4 border-b border-background flex justify-between items-center">
     <div className="flex items-center gap-4">
@@ -14,7 +14,7 @@ export const PendingComponent = (props: {friendRequest: FriendshipReceiver, isCa
       </div>
     </div>
     <div className="flex gap-2">
-      <button className="bg-red-600 px-4 py-2 rounded-lg font-bold hover:bg-red-700" disabled={props.isCanceling} onClick={() => props.cancelAction(props.friendRequest.id)}>
+      <button className="bg-red-600 px-4 py-2 rounded-lg font-bold hover:bg-red-700" disabled={props.isCanceling == props.friendRequest.id} onClick={() => props.cancelAction(props.friendRequest.id)}>
         {props.isCanceling ? <LoaderCircle className="animate-spin"/> : "Cancel"}
       </button>
     </div>
