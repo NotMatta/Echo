@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation"
 export const FriendComponent = (props : {friend: Friends, deleteAction: (id: string) => void, isDeleting: string} ) => {
   const router = useRouter();
   return(
-    <div className="group p-4 border-b border-background flex justify-between items-center" onClick={() => router.push(`/friends/${props.friend.id}`)}>
+    <div className="group p-4 border-b border-background flex justify-between items-center" onClick={() => router.push(`/friends/dm/${props.friend.id}`)}>
       <div className="flex items-center gap-4 relative">
         {props.friend.pfp ? <img src={props.friend.pfp} alt={props.friend.name} className="w-10 h-10 rounded-full object-cover"/> :
           <div className="w-10 h-10 bg-white/10 rounded-full flex justify-center items-center text-2xl font-bold">{props.friend.name.charAt(0).toUpperCase()}</div>}

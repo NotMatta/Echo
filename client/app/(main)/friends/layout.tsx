@@ -67,6 +67,14 @@ const AddFriendButton = () => {
 }
 
 const FriendsLayout = ({children}: {children: React.ReactNode}) => {
+  const path = usePathname();
+
+  if(path.startsWith("/friends/dm")){
+    return <div className="flex flex-col w-full h-screen bg-foreground">
+      {children}
+    </div>;
+  }
+
   return <div className="flex flex-col w-full h-screen">
     <nav className="w-full max-h-16 flex items-center p-4 bg-foreground border-background border-b-2 gap-4">
       <LinkItem href="/friends">Online</LinkItem>

@@ -15,13 +15,12 @@ const NavElement = ({ href, children }: { href: string; children: React.ReactNod
 
 const Navbar = () => {
   return (
-    <nav className="flex flex-col grow">
+    <nav className="flex flex-col grow overflow-y-scroll">
       <NavElement href="/friends"><UsersRound />Friends</NavElement>
       <NavElement href="/chat"><Waypoints /> Groups</NavElement>
       <NavElement href="/settings"><Settings/> Settings</NavElement>
       <NavElement href="/profile"><AtSign/> Mentions</NavElement>
       <NavElement href="/help"><CircleQuestionMark/>Help</NavElement>
-      <NavElement href="/auth"><Lock/>Test Auth</NavElement>
     </nav>
   )
 };

@@ -1,5 +1,6 @@
 'use client';
 import { getSocketToken } from '@/app/actions/socket.action';
+import { getServerUrl } from '@/utils/get-server';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
 
@@ -37,13 +38,14 @@ export const SocketProvider = ({ children } : SocketProviderProps) => {
     const connectToSocket = async () => {
 
       const res = await getSocketToken();
+      const serverUrl = await getServerUrl();
 
       if (!res.ok || !res.socketToken) {
         console.error('Failed to retrieve socket token:', res.message);
         return;
       }
 
-      socketInstance = io(process.env.SERVER_URL || 'http://localhost:5000', {
+      socketInstance = io(serverUrl || 'http://localhost:5000', {
         autoConnect: true,
         transports: ['websocket'],
         auth: {
@@ -89,6 +91,12 @@ export const SocketProvider = ({ children } : SocketProviderProps) => {
         </div>
       </div>
     );
+  }
+
+  if(!isConnected){
+    return (
+      <div>Loading...</div>
+    )
   }
 
   return (

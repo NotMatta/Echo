@@ -12,7 +12,7 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
         <SocketProvider>
           <SocketListener />
           <div className="flex max-h-screen w-screen">
-            <aside className="w-80 h-screen flex flex-col gap-2">
+            <aside className="w-80 h-screen max-f-full flex flex-col gap-2">
               <h3 className="p-4 max-h-16 text-xl flex items-center font-extrabold tracking-widest">Echo</h3>
               <Navbar/>
               <Profile/>

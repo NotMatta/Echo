@@ -94,6 +94,24 @@ export const handleConnection = async (socket: Socket) => {
       });
     }
   });
+  socket.on("typing", ({ to }: { to: string }) => {
+    const receiverSockets = getUserSockets(to);
+    if (receiverSockets) {
+      receiverSockets.forEach(sid => {
+        socket.to(sid).emit("typing", { from: socket.data.userId });
+      });
+    }
+  });
+
+  socket.on("stop-typing", ({ to }: { to: string }) => {
+    const receiverSockets = getUserSockets(to);
+    if (receiverSockets) {
+      receiverSockets.forEach(sid => {
+        socket.to(sid).emit("stop-typing", { from: socket.data.userId });
+      });
+    }
+  });
+
   const friends = await getFriends(socket.data.userId);
   friends.forEach(friendId => {
       socket.join("user-status-" + friendId);

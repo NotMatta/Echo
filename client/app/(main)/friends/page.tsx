@@ -2,7 +2,6 @@
 
 import { FriendComponent } from "@/components/friend-component";
 import { Friends } from "@/types/friendship";
-import { FriendWithId, useFriendships } from "@/components/hooks/useFriendships";
 import { useAppData } from "@/components/providers/app-data-provider";
 import { unfriend } from "@/app/actions/friends.action";
 import { useState } from "react";
@@ -10,7 +9,6 @@ import { useState } from "react";
 const FriendsPage = () => {
 
   const [isUnfriending, setIsUnfriending] = useState("");
-  const {relations : friendships} = useFriendships("FRIENDS") as {relations: FriendWithId[]};
   const {mutateFriends ,mutateFriendships, friends} = useAppData();
 
   const handleDelete = async (id: string) => {
