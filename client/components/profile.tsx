@@ -1,10 +1,10 @@
 "use client"
 
-import { useCache } from "./providers/cache-provider";
+import { useAppData } from "./providers/app-data-provider";
 
 export const Profile = () => {
-  const { get } = useCache()!;
-  const {data: currentUser} = get("user");
+
+  const {currentUser} = useAppData()!;;
   
   if (!currentUser) {
     return <div className="p-4">Not logged in</div>

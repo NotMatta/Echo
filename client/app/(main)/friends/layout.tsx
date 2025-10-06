@@ -5,7 +5,6 @@ import Link from "next/link";
 import { addFriend } from "@/app/actions/friends.action";
 import { useAppData } from "@/components/providers/app-data-provider";
 import { ActionResponse } from "@/types/action-response";
-import { Friendships } from "@/components/providers/app-data-provider";
 
 const LinkItem = ({ href, children }: { href: string; children: React.ReactNode }) => {
   const path = usePathname();
@@ -16,7 +15,7 @@ const LinkItem = ({ href, children }: { href: string; children: React.ReactNode 
 const AddFriendButton = () => {
 
   const [toggle,setTooggle] = useState(false);
-  const { mutateFriendships } = useAppData();
+  const { setPendings } = useAppData()!;
   const [name,setName] = useState("")
   const [response,setResponse] = useState<ActionResponse | null>(null);
   const [loading,setLoading] = useState(false);
@@ -29,16 +28,9 @@ const AddFriendButton = () => {
     setLoading(true);
     const res = await addFriend(name);
     if(res.ok){
-      mutateFriendships((old: Friendships) => {
-        console.log("Old friendships:", old);
-        return {
-          ...old,
-          sent: [
-            ...old.sent,
-            res.data
-          ]
-        };
-      });
+      setPendings((old) => {
+        return [...old, res.data];   
+      })
       setName("");
       setTooggle(false);
     }

@@ -8,7 +8,7 @@ import { useState } from "react";
 
 const RequestsPage = () => {
 
-  const {mutateFriendships} = useAppData();
+  const {setRequests} = useAppData()!;
   const [isProcessing, setIsProcessing] = useState("");
   const {relations: requests} = useFriendships("PENDING", "RECEIVED") as {relations: FriendshipInitiator[]};
 
@@ -19,17 +19,13 @@ const RequestsPage = () => {
       alert(res.message);
     }
     if(res.ok) {
-      mutateFriendships((old) => {
-        return {
-          sent: old.sent,
-          received: old.received.map(fr => {
-            if(fr.id === id) {
-              return {...fr, status: "FRIENDS"};
-            }
-            return fr;
-          })
+      setRequests((old) => old.map(fr => {
+        if(fr.id === id) {
+          return {...fr, status: "FRIENDS"};
         }
-      });
+        return fr;
+      })
+      );
       alert("Friend Request Accepted Successfully");
     }
     setIsProcessing("");
@@ -42,12 +38,7 @@ const RequestsPage = () => {
       alert(res.message);
     }
     if(res.ok) {
-      mutateFriendships((old) => {
-        return {
-          sent: old.sent,
-          received: old.received.filter(fr => fr.id !== id),
-        }
-      });
+      setRequests((old) => old.filter(fr => fr.id !== id));
       alert("Friend Request Declined Successfully");
     }
     setIsProcessing("");

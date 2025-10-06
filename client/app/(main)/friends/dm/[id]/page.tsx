@@ -35,7 +35,7 @@ const MessageItem = ({ message, owner }: { message: Message; owner: Partial<User
 
 const DirectMessagesPage = () => {
   const {id: userId} = useParams();
-  const { friends, currentUser } = useAppData();
+  const { friends, currentUser } = useAppData()!;
   const { socket } = useSocket();
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputMessage, setInputMessage] = useState("");
@@ -65,7 +65,7 @@ const DirectMessagesPage = () => {
     if(!inputMessage.trim() || !friend) return;
     const newMessage: Message = {
       id: Math.random().toString(36).substring(2, 15),
-      senderId: currentUser.id,
+      senderId: currentUser!.id,
       receiverId: friend.id,
       content: inputMessage,
       timestamp: new Date().toISOString(),
@@ -144,7 +144,7 @@ const DirectMessagesPage = () => {
           <MessageItem
             key={msg.id}
             message={msg}
-            owner={msg.senderId === currentUser.id ? currentUser : (friend as Partial<User>)}
+            owner={msg.senderId === currentUser!.id ? currentUser! : (friend as Partial<User>)}
           />
         ))}
         </div>

@@ -12,26 +12,41 @@ router.get("/test", (_req, res) => {
 }
 );
 
-const fetchFriends = async (req: Request, res: Response, friendsOnly?: boolean) => {
+const fetchFriends = async (req: Request, res: Response,) => {
   try{
-    const sent = await prisma.friendship.findMany({
-      where: { initiatorId: req.user!.id },
-      include: { receiver: { select: { id: true, name: true, email: true, pfp: true } } },
+
+    const foundFriends = await prisma.friendship.findMany({
+      where: {
+        AND: [
+          {
+            OR: [
+              { initiatorId: req.user!.id },
+              { receiverId: req.user!.id }
+            ]
+          }
+        ]
+      },
+      include: {
+        initiator: { select: { id: true, name: true, email: true, pfp: true } },
+        receiver: { select: { id: true, name: true, email: true, pfp: true } }
+      }
     });
-    const received = await prisma.friendship.findMany({
-      where: { receiverId: req.user!.id },
-      include: { initiator: { select: { id: true, name: true, email: true, pfp: true } } },
+
+    const requests = foundFriends.filter(f => f.receiverId === req.user!.id && f.status === "PENDING");
+    const pendings = foundFriends.filter(f => f.initiatorId === req.user!.id && f.status === "PENDING");
+    const friends = foundFriends.filter(f => f.status === "FRIENDS").map(f => {
+      const friend = f.initiatorId === req.user!.id ? f.receiver : f.initiator;
+      return {
+        id: friend.id,
+        name: friend.name,
+        email: friend.email,
+        pfp: friend.pfp,
+      }
     });
 
-    if(!friendsOnly) {
-      return res.status(200).json({friendships: {sent,received}});
-    }
+    const friendsWithStatus = await getFriendsStatus(friends);
 
-    const foundfriends = sent.filter(f => f.status === "FRIENDS").map(f => {return {...f.receiver, friendshipId: f.id}})
-      .concat(received.filter(f => f.status === "FRIENDS").map(f => {return {...f.initiator, friendshipId: f.id}}));
-
-    const friends = await getFriendsStatus(foundfriends);
-    return res.status(200).json({friends});
+    return res.status(200).json({friends: friendsWithStatus, requests, pendings});
 
   } catch (error) {
     return res.status(500).json({ message: "Error retrieving friendships", error });
@@ -40,10 +55,6 @@ const fetchFriends = async (req: Request, res: Response, friendsOnly?: boolean) 
 
 router.get("/", async (req, res) => {
   return fetchFriends(req, res);
-});
-
-router.get("/friends", async (req, res) => {
-  return fetchFriends(req, res, true);
 });
 
 router.post("/", async (req, res) => {

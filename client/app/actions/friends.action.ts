@@ -22,7 +22,7 @@ export const getFriendships = async () : Promise<ActionResponse> => {
       return { ok: false, message: errorData.message || "Error retrieving friendships" };
     }
     const data = await res.json();
-    return { ok: true, message: "Friendships retrieved successfully", data: data.friendships };
+    return { ok: true, message: "Friendships retrieved successfully", data };
   } catch (error) {
     return { ok: false, message: "Error retrieving friendships", error };
   }

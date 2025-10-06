@@ -1,72 +1,87 @@
 "use client"
 
-import { getFriends, getFriendships } from "@/app/actions/friends.action"
-import { getCurrentUser } from "@/app/actions/auth.actions"
-import { useFetch } from "../hooks/useFetch"
-import { User } from "@/generated/prisma"
-import { Friends, FriendshipInitiator, FriendshipReceiver } from "@/types/friendship"
-import { createContext, useContext } from "react"
+import { useState, useEffect, createContext, useContext } from "react"
+import { Friendship } from "@/generated/prisma"
+import { Friends, FriendshipReceiver, FriendshipInitiator } from "@/types/friendship";
+import { getFriendships } from "@/app/actions/friends.action";
+import { getCurrentUser } from "@/app/actions/auth.actions";
 
-export interface Friendships {
-  sent: FriendshipReceiver[],
-  received: FriendshipInitiator[]
+interface CurrentUser {
+  id: string;
+  name: string;
+  email: string
+  pfp?: string;
 }
 
-const AppDataContext = createContext<{
-  friendships: Friendships,
-  mutateFriendships: (next: (old: Friendships) => Friendships) => void,
-  friends: Friends[],
-  mutateFriends: (next: (old: Friends[]) => Friends[]) => void,
-  currentUser: User,
-  mutateCurrentUser: (next: (old: User) => User) => void,
-} | null>(null);
+interface AppDataProviderContext {
+  requests: FriendshipInitiator[];
+  pendings: FriendshipReceiver[];
+  friends: Friends[];
+  currentUser: CurrentUser | null;
+  setRequests: (next: (old : FriendshipInitiator[]) => FriendshipInitiator[]) => void ;
+  setPendings: (next: (old : FriendshipReceiver[]) => FriendshipReceiver[]) => void ;
+  setFriends: (next: (old : Friends[]) => Friends[]) => void ;
+  setCurrentUser: (next: (old: CurrentUser | null) => CurrentUser) => void;
+}
 
-export const AppDataProvider = ({children}: {children: React.ReactNode}) => {
-  const {
-    data: friendships,
-    mutate: mutateFriendships,
-    loading: friendshipsLoading,
-    error: friendshipsError
-  } = useFetch<Friendships>("friendships", getFriendships);
+const appDataProviderContext = createContext<AppDataProviderContext | null>(null);
 
-  const {
-    data: currentUser,
-    mutate: mutateCurrentUser,
-    loading: currentUserLoading,
-    error: currentUserError
-  } = useFetch<User>("user", getCurrentUser);
+export const AppDataProvider = ({children} : {children: React.ReactNode}) => {
+  const [requests,setRequests] = useState<FriendshipInitiator[]>([]);
+  const [pendings,setPendings] = useState<FriendshipReceiver[]>([]);
+  const [friends,setFriends] = useState<Friends[]>([]);
+  const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
+  const [error,setError] = useState<string | null>();
+  const [loading,setLoading] = useState(true);
 
-  const {
-    data: friends,
-    mutate: mutateFriends,
-    loading: friendsLoading,
-    error: friendsError
-  } = useFetch<Friends[]>("friends", getFriends);
+  useEffect(() => {
+    const fetchAllFriendships = async () => {
+      const res = await getFriendships();
+      if(!res.ok){
+        setError(res.error);
+        setLoading(false)
+        return;
+      }
+      const data = res.data as AppDataProviderContext;
+      setRequests(data.requests);
+      setPendings(data.pendings);
+      setFriends(data.friends);
+      setLoading(false);
+    }
 
+    const fetchUser = async () => {
+      const res = await getCurrentUser();
+      if(!res.ok){
+        setError(res.error);
+        setLoading(false)
+        return;
+      }
+      const data = res.data as CurrentUser;
+      setCurrentUser(data);
+    }
 
-  if (friendshipsLoading  || currentUserLoading || friendsLoading) {
-    return (
-      <div>Loading...</div>
-    )
+    if (loading) {
+      fetchAllFriendships();
+      fetchUser();
+    }
+      
+  },[])
+
+  if(loading){
+    return "Loading..."
   }
 
-  if (friendshipsError || currentUserError || friendsError) {
-    return (
-      <div>Error loading app data. Please refresh the page. {JSON.stringify({currentUserError, friendshipsError})}</div>
-    )
+  if(error){
+    return "Error..."
   }
 
   return (
-    <AppDataContext.Provider value={{friendships: friendships!, mutateFriendships, currentUser: currentUser!, mutateCurrentUser, friends: friends || [], mutateFriends}}>
-      {children}
-    </AppDataContext.Provider>
+  <appDataProviderContext.Provider value={{requests, pendings, friends, setRequests, setPendings, setFriends, currentUser, setCurrentUser}}>
+    {children}
+  </appDataProviderContext.Provider>
   )
 }
 
 export const useAppData = () => {
-  const context = useContext(AppDataContext);
-  if (!context) {
-    throw new Error("useAppData must be used within an AppDataProvider");
-  }
-  return context;
+  return useContext(appDataProviderContext);
 }
