@@ -28,6 +28,32 @@ export const getFriendships = async () : Promise<ActionResponse> => {
   }
 }
 
+export const getFriends = async () : Promise<ActionResponse> => {
+  const cookieStore = await cookies();
+  try{
+    const token = cookieStore.get('token')?.value;
+    if (!token) {
+      return { ok: false, message: "No token found" };
+    }
+    const res = await fetch(`${process.env.SERVER_URL}/api/friendships/friends`, {
+      method: 'GET',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+        'Cookie': `token=${token}`
+      }
+    });
+    if (!res.ok) {
+      const errorData = await res.json();
+      return { ok: false, message: errorData.message || "Error retrieving friends" };
+    }
+    const data = await res.json();
+    return { ok: true, message: "Friends retrieved successfully", data: data.friends };
+  } catch (error) {
+    return { ok: false, message: "Error retrieving friends", error };
+  }
+}
+
 export const addFriend = async (username: string) : Promise<ActionResponse> => {
   const cookieStore = await cookies();
   try{

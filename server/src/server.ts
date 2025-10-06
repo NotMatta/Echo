@@ -19,12 +19,9 @@ app.use(cors({
   credentials: true
 }));
 
-
 app.get('/', (_req, res) => {
   res.send('Hello, World!');
 });
-
-app.use('/api', apiRouter);
 
 const server = createServer(app);
 const io = new Server(server, {
@@ -37,6 +34,8 @@ const io = new Server(server, {
 io.use(socketMiddleware);
 io.on('connection', handleConnection);
 app.set('io', io);
+
+app.use('/api', apiRouter);
 
 server.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);

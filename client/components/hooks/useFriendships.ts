@@ -5,7 +5,7 @@ import { useCache } from "../providers/cache-provider";
 import { FriendshipInitiator, FriendshipReceiver } from "@/types/friendship";
 import { type Friendships, useAppData } from "../providers/app-data-provider";
 
-export interface FriendWithId extends User {
+export interface FriendWithId extends Partial<User> {
   friendshipId: string;
 }
 

@@ -1,7 +1,8 @@
-import { Router } from "express";
+import { Router, type Request, type Response } from "express";
 import { middleware } from "../auth/auth.middleware.ts";
 import prisma from "../utils/prisma-client.ts";
 import { Status } from "@prisma/client";
+import { getFriendsStatus } from "../socket.ts";
 
 const router: Router = Router();
 router.use(middleware);
@@ -11,7 +12,7 @@ router.get("/test", (_req, res) => {
 }
 );
 
-router.get("/", async (req, res) => {
+const fetchFriends = async (req: Request, res: Response, friendsOnly?: boolean) => {
   try{
     const sent = await prisma.friendship.findMany({
       where: { initiatorId: req.user!.id },
@@ -21,10 +22,28 @@ router.get("/", async (req, res) => {
       where: { receiverId: req.user!.id },
       include: { initiator: { select: { id: true, name: true, email: true, pfp: true } } },
     });
-    return res.status(200).json({friendships: {sent,received}});
+
+    if(!friendsOnly) {
+      return res.status(200).json({friendships: {sent,received}});
+    }
+
+    const foundfriends = sent.filter(f => f.status === "FRIENDS").map(f => {return {...f.receiver, friendshipId: f.id}})
+      .concat(received.filter(f => f.status === "FRIENDS").map(f => {return {...f.initiator, friendshipId: f.id}}));
+
+    const friends = await getFriendsStatus(foundfriends);
+    return res.status(200).json({friends});
+
   } catch (error) {
     return res.status(500).json({ message: "Error retrieving friendships", error });
   }
+};
+
+router.get("/", async (req, res) => {
+  return fetchFriends(req, res);
+});
+
+router.get("/friends", async (req, res) => {
+  return fetchFriends(req, res, true);
 });
 
 router.post("/", async (req, res) => {

@@ -17,3 +17,12 @@ export interface FriendshipReceiver extends Friendship {
     pfp?: string | null,
   }
 }
+
+export interface Friends {
+  id: string,
+  friendshipId: string,
+  name: string,
+  email: string,
+  pfp?: string | null,
+  online: boolean
+}

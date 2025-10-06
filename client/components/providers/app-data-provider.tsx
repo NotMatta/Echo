@@ -1,10 +1,10 @@
 "use client"
 
-import { getFriendships } from "@/app/actions/friends.action"
+import { getFriends, getFriendships } from "@/app/actions/friends.action"
 import { getCurrentUser } from "@/app/actions/auth.actions"
 import { useFetch } from "../hooks/useFetch"
 import { User } from "@/generated/prisma"
-import { FriendshipInitiator, FriendshipReceiver } from "@/types/friendship"
+import { Friends, FriendshipInitiator, FriendshipReceiver } from "@/types/friendship"
 import { createContext, useContext } from "react"
 
 export interface Friendships {
@@ -15,6 +15,8 @@ export interface Friendships {
 const AppDataContext = createContext<{
   friendships: Friendships,
   mutateFriendships: (next: (old: Friendships) => Friendships) => void,
+  friends: Friends[],
+  mutateFriends: (next: (old: Friends[]) => Friends[]) => void,
   currentUser: User,
   mutateCurrentUser: (next: (old: User) => User) => void,
 } | null>(null);
@@ -34,20 +36,28 @@ export const AppDataProvider = ({children}: {children: React.ReactNode}) => {
     error: currentUserError
   } = useFetch<User>("user", getCurrentUser);
 
-  if (friendshipsLoading  || currentUserLoading) {
+  const {
+    data: friends,
+    mutate: mutateFriends,
+    loading: friendsLoading,
+    error: friendsError
+  } = useFetch<Friends[]>("friends", getFriends);
+
+
+  if (friendshipsLoading  || currentUserLoading || friendsLoading) {
     return (
       <div>Loading...</div>
     )
   }
 
-  if (friendshipsError || currentUserError) {
+  if (friendshipsError || currentUserError || friendsError) {
     return (
       <div>Error loading app data. Please refresh the page. {JSON.stringify({currentUserError, friendshipsError})}</div>
     )
   }
 
   return (
-    <AppDataContext.Provider value={{friendships: friendships!, mutateFriendships, currentUser: currentUser!, mutateCurrentUser}}>
+    <AppDataContext.Provider value={{friendships: friendships!, mutateFriendships, currentUser: currentUser!, mutateCurrentUser, friends: friends || [], mutateFriends}}>
       {children}
     </AppDataContext.Provider>
   )
