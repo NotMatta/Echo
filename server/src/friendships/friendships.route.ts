@@ -2,7 +2,8 @@ import { Router, type Request, type Response } from "express";
 import { middleware } from "../auth/auth.middleware.ts";
 import prisma from "../utils/prisma-client.ts";
 import { Status } from "@prisma/client";
-import { getFriendsStatus } from "../socket.ts";
+import { getFriendsStatus, getUserSockets } from "../socket.ts";
+import type { Socket } from "socket.io";
 
 const router: Router = Router();
 router.use(middleware);
@@ -41,6 +42,7 @@ const fetchFriends = async (req: Request, res: Response,) => {
         name: friend.name,
         email: friend.email,
         pfp: friend.pfp,
+        friendshipId: f.id,
       }
     });
 
@@ -113,7 +115,14 @@ router.post("/", async (req, res) => {
         receiverId: foundUser.id,
         status: "PENDING",
       },
-      include: { receiver: { select: { id: true, name: true, email: true, pfp: true } } },
+      include: {
+        receiver: { select: { id: true, name: true, email: true, pfp: true } },
+        initiator: { select: { id: true, name: true, email: true, pfp: true } }
+      },
+    });
+    const io: Socket = req.app.get('io');
+    getUserSockets(foundUser.id)?.forEach(sid => {
+      io.to(sid).emit("new-friend-request", newFriendship);
     });
     return res.status(201).json({ message: "Friend request sent", friendship: newFriendship });
   }
@@ -131,12 +140,21 @@ router.put("/:friendshipId", async (req, res) => {
     }
     const friendship = await prisma.friendship.findUnique({
       where: { id: friendshipId },
+      include: {
+        receiver: { select: { id: true, name: true, email: true, pfp: true } },
+        initiator: { select: { id: true, name: true, email: true, pfp: true } }
+      },
     });
     if (!friendship) {
       return res.status(404).json({ message: "Friend request not found" });
     }
 
     let updatedStatus: Status;
+    const receiverSockets: string[] = []
+    const initiatorSockets: string[] = []
+    const io: Socket = req.app.get("io");
+    getUserSockets(friendship.receiverId)?.forEach(sid => receiverSockets.push(sid));
+    getUserSockets(friendship.initiatorId)?.forEach(sid => initiatorSockets.push(sid));
 
     switch (action) {
       case "ACCEPT": case "REJECT":
@@ -153,6 +171,7 @@ router.put("/:friendshipId", async (req, res) => {
           return res.status(403).json({ message: "You are not authorized to cancel this friend request" });
         }
         await prisma.friendship.delete({ where: { id: friendshipId } });
+        io.to(receiverSockets).emit("friend-request-cancelled", { friendshipId });
         return res.status(200).json({ message: `Friend request Canceled` });
       case "BLOCK":
         if ((friendship.initiatorId !== req.user!.id && friendship.receiverId !== req.user!.id) || friendship.status !== "FRIENDS") {
@@ -174,6 +193,16 @@ router.put("/:friendshipId", async (req, res) => {
       where: { id: friendshipId },
       data: { status: updatedStatus },
     });
+
+    switch (updatedStatus) {
+      case "FRIENDS":
+        const friend = friendship.receiver;
+        io.to(initiatorSockets).emit("friend-request-accepted", {...friend, online: false, friendshipId})
+        break;
+      case "REJECTED":
+        io.to(initiatorSockets).emit("friend-request-declined", { friendshipId })
+        break;
+    }
 
     return res.status(200).json({ message: `Friend request ${action.toLowerCase()}ed`, friendship: updatedFriendship });
   }
@@ -201,6 +230,16 @@ router.delete("/:friendshipId", async (req, res) => {
       return res.status(400).json({ message: "Only friends can be deleted" });
     }
     await prisma.friendship.delete({ where: { id: friendshipId } });
+    const io: Socket = req.app.get('io');
+    if(friendship.initiatorId === req.user!.id) {
+      getUserSockets(friendship.receiverId)?.forEach(sid => {
+        io.to(sid).emit("friend-unfriended", { friendshipId: friendship.id });
+      });
+    } else {
+      getUserSockets(friendship.initiatorId)?.forEach(sid => {
+        io.to(sid).emit("friend-unfriended", { friendshipId: friendship.id });
+      });
+    }
     return res.status(200).json({ message: "Friend request deleted" });
   } catch (error) {
     return res.status(500).json({ message: "Error deleting friend request", error });

@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useEffect, createContext, useContext } from "react"
-import { Friendship } from "@/generated/prisma"
 import { Friends, FriendshipReceiver, FriendshipInitiator } from "@/types/friendship";
 import { getFriendships } from "@/app/actions/friends.action";
 import { getCurrentUser } from "@/app/actions/auth.actions";

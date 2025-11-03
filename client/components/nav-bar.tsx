@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { AtSign, CircleQuestionMark, Settings, UsersRound, Waypoints, Lock } from "lucide-react";
+import { AtSign, CircleQuestionMark, Settings, UsersRound, Waypoints, Lock, Bell } from "lucide-react";
 import { usePathname } from "next/navigation";
 
 const NavElement = ({ href, children }: { href: string; children: React.ReactNode }) => {
@@ -20,7 +20,7 @@ const Navbar = () => {
       <NavElement href="/chat"><Waypoints /> Groups</NavElement>
       <NavElement href="/settings"><Settings/> Settings</NavElement>
       <NavElement href="/profile"><AtSign/> Mentions</NavElement>
-      <NavElement href="/help"><CircleQuestionMark/>Help</NavElement>
+      <NavElement href="/notifications"><Bell/> Notifications</NavElement>
     </nav>
   )
 };

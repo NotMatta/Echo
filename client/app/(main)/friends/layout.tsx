@@ -5,11 +5,15 @@ import Link from "next/link";
 import { addFriend } from "@/app/actions/friends.action";
 import { useAppData } from "@/components/providers/app-data-provider";
 import { ActionResponse } from "@/types/action-response";
+import { useNotification } from "@/components/providers/notification-provider";
 
-const LinkItem = ({ href, children }: { href: string; children: React.ReactNode }) => {
+const LinkItem = ({ href, count, children }: { href: string, count: number, children: React.ReactNode }) => {
   const path = usePathname();
 
-  return <Link href={href} className={`py-1 px-4 ${path == href ? "border rounded-xl border-white" : "text-white/50 hover:text-white"}`}>{children}</Link>;
+  return <Link href={href} className={`py-1 px-4 relative ${path == href ? "border rounded-xl border-white" : "text-white/50 hover:text-white"}`}>
+    {count > 0 && <div className="bg-red-500 text-xs absolute top-0 right-0 w-4 h-4 rounded-full flex items-center justify-center text-white">{count}</div>}
+    {children}
+  </Link>;
 }
 
 const AddFriendButton = () => {
@@ -60,6 +64,7 @@ const AddFriendButton = () => {
 
 const FriendsLayout = ({children}: {children: React.ReactNode}) => {
   const path = usePathname();
+  const { requests } = useAppData()!;
 
   if(path.startsWith("/friends/dm")){
     return <div className="flex flex-col w-full h-screen bg-foreground">
@@ -69,10 +74,10 @@ const FriendsLayout = ({children}: {children: React.ReactNode}) => {
 
   return <div className="flex flex-col w-full h-screen">
     <nav className="w-full max-h-16 flex items-center p-4 bg-foreground border-background border-b-2 gap-4">
-      <LinkItem href="/friends">Online</LinkItem>
-      <LinkItem href="/friends/requests">Requests</LinkItem>
-      <LinkItem href="/friends/pending">Pending</LinkItem>
-      <LinkItem href="/friends/blocked">Blocked</LinkItem>
+      <LinkItem href="/friends" count={0}>Online</LinkItem>
+      <LinkItem href="/friends/requests" count={requests.length}>Requests</LinkItem>
+      <LinkItem href="/friends/pending" count={0}>Pending</LinkItem>
+      <LinkItem href="/friends/blocked" count={0}>Blocked</LinkItem>
       <AddFriendButton/>
     </nav>
     <div className="flex flex-col grow overflow-y-auto bg-foreground">

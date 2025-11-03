@@ -17,7 +17,7 @@ const FriendsPage = () => {
     if(!res.ok) {
       alert(res.message);
     } else {
-      setFriends((old) => old.filter(f => f.id !== id));
+      setFriends((old) => old.filter(f => f.friendshipId !== id));
       alert("Unfriended Successfully");
     }
     setIsUnfriending("");

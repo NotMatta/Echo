@@ -75,7 +75,8 @@ export const getFriendsStatus = async (friends: Partial<User>[]) => {
       name: friend.name,
       email: friend.email,
       pfp: friend.pfp,
-     online: activeSockets.has(friend.id!)
+      friendshipId: (friend as any).friendshipId,
+      online: activeSockets.has(friend.id!)
     }
   });
 }

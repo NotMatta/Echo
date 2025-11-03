@@ -1,6 +1,5 @@
 "use client"
 import { RequestComponent } from "@/components/request-component";
-import { useFriendships } from "@/components/hooks/useFriendships";
 import { FriendshipInitiator } from "@/types/friendship";
 import { useAppData } from "@/components/providers/app-data-provider";
 import { acceptRequest, declineRequest } from "@/app/actions/friends.action";
@@ -8,9 +7,8 @@ import { useState } from "react";
 
 const RequestsPage = () => {
 
-  const {setRequests} = useAppData()!;
+  const {setRequests, requests, setFriends} = useAppData()!;
   const [isProcessing, setIsProcessing] = useState("");
-  const {relations: requests} = useFriendships("PENDING", "RECEIVED") as {relations: FriendshipInitiator[]};
 
   const handleAccept = async (id: string) => {
     setIsProcessing(id);
@@ -19,13 +17,16 @@ const RequestsPage = () => {
       alert(res.message);
     }
     if(res.ok) {
-      setRequests((old) => old.map(fr => {
-        if(fr.id === id) {
-          return {...fr, status: "FRIENDS"};
-        }
-        return fr;
-      })
-      );
+      const friendrequest = requests.find(req => req.id == id)!;
+      setRequests((old) => old.filter(fr => fr.id !== id));
+      setFriends((old) => [...old, {
+        id: friendrequest.initiator.id,
+        name: friendrequest.initiator.name,
+        email: friendrequest.initiator.email,
+        pfp: friendrequest.initiator.pfp,
+        online: false,
+        friendshipId: id
+      }]);
       alert("Friend Request Accepted Successfully");
     }
     setIsProcessing("");
