@@ -5,6 +5,7 @@ import { UserRound } from "lucide-react";
 import { ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useAppData } from "@/components/providers/app-data-provider";
 
 const LinkItem = ({ href, count, children }: { href: string, count: number, children: React.ReactNode }) => {
   const path = usePathname();
@@ -16,7 +17,10 @@ const LinkItem = ({ href, count, children }: { href: string, count: number, chil
 }
 
 const Layout = ({children} : {children: ReactNode}) => {
+
   const path = usePathname();
+  const {requests, pendings} = useAppData()!
+
   return(
     <PageTemplate.Main>
       <PageTemplate.Header>
@@ -31,6 +35,8 @@ const Layout = ({children} : {children: ReactNode}) => {
           <Link href="/dm/add" className={`px-3 py-1 rounded-lg cursor-pointer ${path == "/dm/add" ? "bg-[#242640] text-[#778AF2]":  "hover:bg-[#7289da]/90 bg-[#5865F2]"}`}>
             Add Friend
           </Link>
+          {pendings.length > 0 && <LinkItem href="/dm/pending" count={pendings.length}>Pending</LinkItem>}
+          {requests.length > 0 && <LinkItem href="/dm/requests" count={requests.length}>Requests</LinkItem>}
         </div>
       </PageTemplate.Header>
       <PageTemplate.Body>

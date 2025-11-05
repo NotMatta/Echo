@@ -51,6 +51,8 @@ export const SocketListener = () => {
     });
 
     socket.on("friend-request-accepted", (data: Friends ) => {
+      alert("Receiver Accepted your request")
+      console.log(data)
       setPendings((old) => old.filter((pending) => pending.id !== data.friendshipId));
       setFriends((old) => [data, ...old]);
     });

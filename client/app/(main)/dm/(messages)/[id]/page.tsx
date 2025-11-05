@@ -19,7 +19,7 @@ const MessageItem = ({ message, owner }: { message: Message; owner: Partial<User
   const messageDate = new Date(message.timestamp)
 
   return (
-    <div className="w-full flex items-start gap-4 grow">
+    <div className="w-full flex items-start gap-4">
       {owner.pfp ? (
         <img src={owner.pfp} alt={owner.name} className="w-10 h-10 rounded-full object-cover inline-block"/>
       ) : (

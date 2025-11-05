@@ -127,7 +127,8 @@ export const acceptRequest = async (friendshipId: string) : Promise<ActionRespon
       const errorData = await res.json();
       return { ok: false, message: errorData.message || "Error accepting friend request" };
     }
-    return { ok: true, message: "Friend request accepted successfully" };
+    const data = await res.json()
+    return { ok: true, message: "Friend request accepted successfully", data: data.friendship };
   } catch (error) {
     return { ok: false, message: "Error accepting friend request", error };
   }
