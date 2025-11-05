@@ -17,14 +17,14 @@ const Sidebar = (props: PropsInterface) => (
 )
 
 const Title = (props: PropsInterface) => (
-  <div className="h-12 border-b border-b-accent flex items-center p-4">
+  <div className="h-13 border-b border-b-accent flex items-center p-4">
     {props.children}
   </div>
 )
 
 const List = (props: PropsInterface) => (
   <div className="flex flex-col h-full">
-    <div className="flex flex-col h-0 grow max-h-full overflow-y-auto scrollbar scrollbar-w-[2px] scrollbar-thumb-white/40 scrollbar-thumb-rounded-xl p-2">
+    <div className="flex flex-col gap-1 h-0 grow max-h-full overflow-y-auto scrollbar scrollbar-w-[2px] scrollbar-thumb-white/40 scrollbar-thumb-rounded-xl p-2">
       {props.children}
     </div>
     <div className="h-[72px]"/>
@@ -38,7 +38,7 @@ const Main = (props: PropsInterface) => (
 )
 
 const Header = (props: PropsInterface) => (
-  <div className="h-12 border-b border-b-accent flex items-center p-4 gap-3">
+  <div className="h-13 border-b border-b-accent flex items-center p-4 gap-3">
     {props.children}
   </div>
 )
@@ -50,7 +50,7 @@ const Body = (props: PropsInterface) => (
 )
 
 const Content = (props: PropsInterface) => (
-  <div className="grow max-h-full py-2 px-4">
+  <div className="grow flex flex-col max-h-full py-2 px-4">
     {props.children}
   </div>
 )

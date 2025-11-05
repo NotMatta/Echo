@@ -1,8 +1,9 @@
 "use client";
 import { useAppData } from "@/components/providers/app-data-provider";
 import { useSocket } from "@/components/providers/socket-provider";
+import { PageTemplate } from "@/components/ui/v2/page-template";
 import { User } from "@/generated/prisma";
-import { ChevronLeft, Send } from "lucide-react";
+import { ChevronLeft } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -14,24 +15,33 @@ interface Message {
   timestamp: string;
 }
 
-const MessageItem = ({ message, owner }: { message: Message; owner: Partial<User>}) => (
-  <div className="w-full flex mb-2 border-b border-transparent hover:border-white/10 pb-2">
-    <div className="flex items-start gap-2 grow">
+const MessageItem = ({ message, owner }: { message: Message; owner: Partial<User>}) => {
+  const messageDate = new Date(message.timestamp)
+
+  return (
+    <div className="w-full flex items-start gap-4 grow">
       {owner.pfp ? (
         <img src={owner.pfp} alt={owner.name} className="w-10 h-10 rounded-full object-cover inline-block"/>
       ) : (
-        <div className="w-10 h-10 bg-white/10 rounded-full flex justify-center items-center text-lg font-bold">
-          {owner.name!.charAt(0).toUpperCase() || "U"}
-        </div>
-      )}
+          <div className="w-10 h-10 bg-white/10 rounded-full flex justify-center items-center text-lg font-bold">
+            {owner.name!.charAt(0).toUpperCase() || "U"}
+          </div>
+        )}
       <div className="flex flex-col">
-        <strong className="text-sm">{owner.name}</strong>
+        <div className="flex gap-2 items-center">
+          <p className="text-sm font-semibold">{owner.name}</p>
+          <div className="text-xs text-gray-400">{
+            /* Check if it's today ? HH:MM else DD/MM/YYYY HH:MM */
+            messageDate.toDateString() === new Date().toDateString()
+              ? messageDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+              : messageDate.toLocaleDateString() + " " + messageDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+          }</div>
+        </div>
         <p className="whitespace-pre">{message.content}</p>
       </div>
     </div>
-    <div className="text-xs text-gray-400">{new Date(message.timestamp).toLocaleString()}</div>
-  </div>
-);
+  )
+};
 
 const DirectMessagesPage = () => {
   const {id: userId} = useParams();
@@ -122,50 +132,56 @@ const DirectMessagesPage = () => {
   },[socket, isTyping, inputMessage, friend?.id]);
 
   return (
-    <div className="flex flex-col h-full max-w-full max-h-full">
-      <div className="w-full max-h-16 flex items-center p-4 bg-foreground border-background border-b-2 gap-4">
-        <button onClick={() => router.back()} className="text-xl font-bold"><ChevronLeft/></button>
+    <PageTemplate.Main>
+      <PageTemplate.Header>
+        <button onClick={() => router.push("/dm")} className="text-xl font-bold"><ChevronLeft/></button>
         <div className="flex items-center gap-2">
           {friend?.pfp ? (
-            <img src={friend.pfp} alt={friend.name} className="w-10 h-10 rounded-full object-cover inline-block"/>
+            <img src={friend.pfp} alt={friend.name} className="w-6 h-6 rounded-full object-cover inline-block"/>
           ) : (
-            <div className="w-10 h-10 bg-white/10 rounded-full flex justify-center items-center text-2xl font-bold">
-              {friend?.name.charAt(0).toUpperCase() || "U"}
+              <div className="w-10 h-10 bg-white/10 rounded-full flex justify-center items-center text-2xl font-bold">
+                {friend?.name.charAt(0).toUpperCase() || "U"}
+              </div>
+            )}
+          <span className="font-bold text-sm">{friend?.name || "Unknown User"}</span>
+        </div>
+      </PageTemplate.Header>
+      <PageTemplate.Body>
+        <PageTemplate.Content>
+          <div className="flex flex-col h-full">
+            <div className="flex flex-col gap-2 h-0 grow overflow-y-auto max-h-full scrollbar scrollbar-w-[4px] scrollbar-thumb-white/40 scrollbar-thumb-rounded-xl px-2">
+              {messages.length === 0 ? (
+                <p>No messages yet. Start the conversation!</p>
+              ) :  messages.map((msg) => (
+                  <MessageItem
+                    key={msg.id}
+                    message={msg}
+                    owner={msg.senderId === currentUser!.id ? currentUser! : (friend as Partial<User>)}
+                  />
+                ))}
             </div>
-          )}
-          <span className="font-bold text-lg">{friend?.name || "Unknown User"}</span>
-        </div>
-      </div>
-      <div className="flex flex-col h-full">
-        <div className="flex flex-col gap-2 h-0 grow overflow-y-auto max-h-full p-4">
-        {messages.length === 0 ? (
-          <p>No messages yet. Start the conversation!</p>
-        ) :  messages.map((msg) => (
-          <MessageItem
-            key={msg.id}
-            message={msg}
-            owner={msg.senderId === currentUser!.id ? currentUser! : (friend as Partial<User>)}
-          />
-        ))}
-        </div>
-        {isFriendTyping && (
-          <div className="px-4 text-sm text-gray-400 italic">{friend?.name} is typing...</div>
-        )}
-        <div className="flex gap-2 p-4">
-          <input
-            type="text"
-            value={inputMessage}
-            onChange={(e) => setInputMessage(e.target.value)}
-            className="bg-white/10 rounded px-2 py-3 flex-grow"
-            placeholder="Type your message..."
-            onKeyDown={(e) => { if (e.key === 'Enter') handleSendMessage(); }}
-          />
-          <button onClick={handleSendMessage} className="bg-primary text-white px-4 py-2 rounded">
-            <Send/>
-          </button>
-        </div>
-      </div>
-    </div>
+            {isFriendTyping && (
+              <div className="px-4 text-sm text-gray-400 italic">{friend?.name} is typing...</div>
+            )}
+            <div className="flex gap-2 pt-2">
+              <input
+                type="text"
+                value={inputMessage}
+                onChange={(e) => setInputMessage(e.target.value)}
+                className="bg-[#222327] rounded-xl px-4 py-5 flex-grow focus-within:outline-none"
+                placeholder="Type your message..."
+                onKeyDown={(e) => { if (e.key === 'Enter') handleSendMessage(); }}
+              />
+            </div>
+          </div>
+        </PageTemplate.Content>
+        <PageTemplate.SidePanel>
+          <h2 className="font-bold mb-2">About {friend?.name}</h2>
+          <p>ID: {friend?.id}</p>
+          {/* Additional friend info can go here */}
+        </PageTemplate.SidePanel>
+      </PageTemplate.Body>
+    </PageTemplate.Main>
   );
 }
 
