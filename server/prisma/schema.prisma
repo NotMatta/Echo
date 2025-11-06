@@ -47,6 +47,8 @@ model Friendship {
   receiverId String
   receiver   User @relation("FriendshipReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
 
+  conversation Conversation?
+
   @@unique([initiatorId, receiverId])
 }
 
@@ -55,6 +57,9 @@ model Conversation {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   type      ConversationType @default(DIRECT)
+  friendshipId String? @unique
+  friendship   Friendship? @relation(fields: [friendshipId], references: [id], onDelete: Cascade)
+
   messages  Message[]
   participants ConversationParticipant[]
 }
@@ -75,9 +80,11 @@ model ConversationParticipant {
   id             String   @id @default(uuid())
   conversationId String
   userId         String
-  lastReadAt    DateTime @default(now())
+  lastReadAt     DateTime @default(now())
+
   conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
   user           User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@unique([conversationId, userId])
 }
 
 enum ConversationType {

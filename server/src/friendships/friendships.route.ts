@@ -4,6 +4,7 @@ import prisma from "../utils/prisma-client.ts";
 import { Status } from "@prisma/client";
 import { getFriendsStatus, getFriendStatus, getUserSockets } from "../socket.ts";
 import type { Socket } from "socket.io";
+import { ConversationType } from "../../generated/prisma/index.js";
 
 const router: Router = Router();
 router.use(middleware);
@@ -203,6 +204,24 @@ router.put("/:friendshipId", async (req, res) => {
         io.to(initiatorSockets).socketsJoin("user-status-" + friendship.receiverId)
         io.to(receiverSockets).socketsJoin("user-status-" + friendship.initiatorId)
         io.to(initiatorSockets).emit("friend-request-accepted", {...receiver, friendshipId})
+        const newConversation = await prisma.conversation.create({
+          data:{
+            type: ConversationType.DIRECT,
+            friendshipId: friendship.id,
+          }
+        })
+        await prisma.conversationParticipant.create({
+          data:{
+            userId: friendship.receiverId,
+            conversationId: newConversation.id,
+          }
+        })
+        await prisma.conversationParticipant.create({
+          data:{
+            userId: friendship.initiatorId,
+            conversationId: newConversation.id,
+          }
+        })
         break;
       case "REJECTED":
         io.to(initiatorSockets).emit("friend-request-declined", { friendshipId })
@@ -234,20 +253,25 @@ router.delete("/:friendshipId", async (req, res) => {
     if(friendship.status !== "FRIENDS") {
       return res.status(400).json({ message: "Only friends can be deleted" });
     }
-    await prisma.friendship.delete({ where: { id: friendshipId } });
+
+    await prisma.friendship.delete({ where: { id: friendshipId }, include: {conversation: true} });
+
     const receiverSockets: string[] = []
     const initiatorSockets: string[] = []
     const io: Socket = req.app.get("io");
     getUserSockets(friendship.receiverId)?.forEach(sid => receiverSockets.push(sid));
     getUserSockets(friendship.initiatorId)?.forEach(sid => initiatorSockets.push(sid));
+
     if(receiverSockets.length == 0) receiverSockets.push("offline-socket");
     if(initiatorSockets.length == 0) initiatorSockets.push("offline-socket");
+
     io.to(receiverSockets).emit("friend-unfriended", { friendshipId: friendship.id });
     io.to(initiatorSockets).emit("friend-unfriended", { friendshipId: friendship.id });
-    //if(friendship.initiatorId === req.user!.id)
     io.to(receiverSockets).socketsLeave("user-status-" + friendship.initiatorId)
     io.to(initiatorSockets).socketsLeave("user-status-" + friendship.receiverId)
+
     return res.status(200).json({ message: "Friend request deleted" });
+
   } catch (error) {
     return res.status(500).json({ message: "Error deleting friend request", error });
   }
