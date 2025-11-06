@@ -66,10 +66,6 @@ export const SocketListener = () => {
       setPendings((old) => old.filter((req) => req.id !== data.friendshipId));
     });
 
-    socket.on("test-event", () => {
-      alert("broadcasted")
-    })
-
     return () => {
       socket.off("friend-online");
       socket.off("friend-offline");
@@ -78,7 +74,6 @@ export const SocketListener = () => {
       socket.off("friend-request-accepted");
       socket.off("friend-request-declined");
       socket.off("friend-request-cancelled");
-      socket.off("test-event");
     };
   }, [socket, setFriends]);
 
