@@ -30,7 +30,8 @@ const fetchFriends = async (req: Request, res: Response,) => {
       },
       include: {
         initiator: { select: { id: true, name: true, email: true, pfp: true } },
-        receiver: { select: { id: true, name: true, email: true, pfp: true } }
+        receiver: { select: { id: true, name: true, email: true, pfp: true } },
+        conversation: { select: { id: true } }
       }
     });
 
@@ -44,6 +45,7 @@ const fetchFriends = async (req: Request, res: Response,) => {
         email: friend.email,
         pfp: friend.pfp,
         friendshipId: f.id,
+        conversationId: f.conversation?.id || null,
       }
     });
 

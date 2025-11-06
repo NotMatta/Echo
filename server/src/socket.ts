@@ -71,11 +71,7 @@ const getFriends = async (userId: string) => {
 export const getFriendsStatus = async (friends: Partial<User>[]) => {
   return friends.map(friend => {
     return {
-      id: friend.id,
-      name: friend.name,
-      email: friend.email,
-      pfp: friend.pfp,
-      friendshipId: (friend as any).friendshipId,
+      ...friend,
       online: activeSockets.has(friend.id!)
     }
   });
@@ -128,6 +124,19 @@ export const handleConnection = async (socket: Socket) => {
   friends.forEach(friendId => {
       socket.join("user-status-" + friendId);
   });
+  const conversations = await prisma.conversationParticipant.findMany({
+    where: {
+      userId: socket.data.userId
+    },
+    select: {
+      conversationId: true
+    }
+  });
+
+  conversations.forEach(participation => {
+    socket.join("conversation-" + participation.conversationId);
+  });
+
   console.log('A user connected:', socket.id, 'User ID:', socket.data.userId, 'Total active sockets:', getCountActiveSockets());
 
   socket.on('disconnect', () => {

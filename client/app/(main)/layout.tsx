@@ -1,7 +1,5 @@
-import Navbar from "@/components/nav-bar";
 import { CacheProvider } from "@/components/providers/cache-provider";
 import { AppDataProvider } from "@/components/providers/app-data-provider";
-import { Profile } from "@/components/profile";
 import { SocketProvider } from "@/components/providers/socket-provider";
 import { SocketListener } from "@/components/socket-listener";
 import { NotificationProvider } from "@/components/providers/notification-provider";

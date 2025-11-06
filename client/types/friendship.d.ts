@@ -21,6 +21,7 @@ export interface FriendshipReceiver extends Friendship {
 export interface Friends {
   id: string,
   friendshipId: string,
+  conversationId: string,
   name: string,
   email: string,
   pfp?: string | null,

@@ -13,7 +13,7 @@ export const DmItem = ({friend} : {friend: Friends}) => {
 
   return (
     <div
-      onClick={() => router.push(`/dm/${friend.id}`)}
+      onClick={() => router.push(`/dm/${friend.conversationId}`)}
       className="flex group justify-between items-center gap-3 rounded-xl hover:bg-[#242428] cursor-pointer p-2">
       <div className="w-9 h-9 bg-gray-500 rounded-full flex items-center justify-center text-white relative">
         <img src={friend.pfp || defaultPfp} className="w-full rounded-full h-full object-cover"/>

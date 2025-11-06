@@ -55,6 +55,7 @@ router.get('/', async (req, res) => {
 });
 
 router.post('/messages', async (req, res) => {
+  const io = req.app.get('io');
   try {
     const { conversationId, content } = req.body;
     if (!conversationId || !content) {
@@ -80,6 +81,7 @@ router.post('/messages', async (req, res) => {
       },
     });
     res.status(201).json(message);
+    io.to("conversation-" + conversationId).emit("newMessage", message);
   }
   catch (error) {
     console.error("Error posting message to conversation:", error);

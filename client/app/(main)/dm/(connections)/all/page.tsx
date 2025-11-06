@@ -16,7 +16,7 @@ const DmItem = ({friend, variant, deleteAction, isDeleting} : {friend: Friends, 
 
   return (
     <div
-      onClick={() => router.push(`/dm/${friend.id}`)}
+      onClick={() => router.push(`/dm/${friend.conversationId}`)}
       className={`flex group justify-between items-center gap-3 rounded-xl hover:bg-[#242428] cursor-pointer ${!variant ||variant == "default" ? "p-2" : "p-3 rounded-t-none hover:rounded-t-lg border-t border-[#242428]"}`}>
       <div className="w-9 h-9 bg-gray-500 rounded-full flex items-center justify-center text-white relative">
         <img src={friend.pfp || defaultPfp} className="w-full rounded-full h-full object-cover"/>
